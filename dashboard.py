@@ -39,8 +39,8 @@ PYTORCH_MODEL_PATH = "model/KucingAnjing.pt"
 KERAS_MODEL_PATH = "model/AnjingKucing.h5"
 
 NAMA_PEMBUAT = "M. Zaky Al Fudhari"      # ganti sesuai nama kamu
-NIM_PEMBUAT = "NIM kamu di sini"         # ganti sesuai NIM kamu
-KAMPUS_DEFAULT = "Universitas kamu"
+NIM_PEMBUAT = "2308108010064"         # ganti sesuai NIM kamu
+KAMPUS_DEFAULT = "Universitas Syiah Kuala"
 
 STEP_KEYS = ["home", "register", "main"]
 STEP_LABELS = ["Mulai", "Daftar", "Pindai"]
