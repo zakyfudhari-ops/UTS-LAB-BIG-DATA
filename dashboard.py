@@ -391,9 +391,8 @@ def halaman_main():
         "CNN langsung mengklasifikasikan seluruh gambar."
     )
 
-    with st.sidebar.expander("Urutan label"):
-        st.caption("Jika hasil CNN sering tertukar antara kucing dan anjing, balik urutan kelasnya di sini.")
-        swap_labels = st.checkbox("Balik urutan (Anjing ⇄ Kucing)", value=False)
+    swap_labels = st.sidebar.checkbox("Balik urutan label (Anjing ⇄ Kucing)", value=False)
+    st.sidebar.caption("Aktifkan kalau hasil CNN sering tertukar antara kucing dan anjing.")
     class_names = list(reversed(CLASS_NAMES)) if swap_labels else CLASS_NAMES
 
     st.markdown(
