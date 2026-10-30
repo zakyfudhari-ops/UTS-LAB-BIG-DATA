@@ -377,7 +377,7 @@ def halaman_awal():
             '<div class="fade-in">'
             '<div class="hero-title">Satu foto, dua model,<br>satu jawaban: kucing atau anjing.</div>'
             '<div class="hero-sub">Unggah fotonya. Model YOLO dan model CNN sama-sama memeriksa gambar itu, '
-            'lalu masing-masing melaporkan hasilnya secara terpisah — lengkap dengan seberapa yakin mereka.</div>'
+            'lalu masing-masing melaporkan hasilnya secara terpisah.</div>'
             '</div>',
             unsafe_allow_html=True,
         )
