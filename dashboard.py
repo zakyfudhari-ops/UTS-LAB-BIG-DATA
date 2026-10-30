@@ -22,6 +22,7 @@ Struktur folder:
 """
 
 import io
+import os
 import base64
 import datetime
 
@@ -121,8 +122,8 @@ html, body, [class*="css"] { font-family:'IBM Plex Sans', sans-serif; }
 /* ---------- hero (home) ---------- */
 .hero-title{ font-family:'Big Shoulders Display'; font-weight:800; font-size:clamp(32px,4.4vw,50px); line-height:1.04; color:var(--text); margin:22px 0 10px 0; max-width:720px; }
 .hero-sub{ font-size:15px; color:var(--text-dim); max-width:560px; line-height:1.65; margin-bottom:6px; }
-.hero-art{ background:var(--surface-2); border-radius:20px; border:1px solid var(--line); padding:12px; margin-top:8px; }
-.hero-art svg{ width:100%; height:auto; display:block; }
+.hero-art{ background:var(--surface-2); border-radius:20px; border:1px solid var(--line); padding:10px; margin-top:8px; overflow:hidden; }
+.hero-art img{ width:100%; height:auto; display:block; border-radius:12px; }
 
 /* ---------- intro / section heading ---------- */
 .intro{ border-left:3px solid var(--accent); padding:2px 0 2px 16px; margin:8px 0 22px 0; color:var(--text-dim); font-size:14.5px; line-height:1.65; max-width:680px; }
@@ -350,26 +351,7 @@ def render_result_row(icon: str, model_name: str, label: str, conf: float, names
 # ==========================================================
 # HALAMAN: AWAL
 # ==========================================================
-HERO_SVG = """
-<div class="hero-art fade-in">
-<svg viewBox="0 0 320 260" xmlns="http://www.w3.org/2000/svg">
-  <ellipse cx="160" cy="214" rx="120" ry="18" fill="rgba(0,0,0,0.18)"/>
-  <g fill="var(--sage)">
-    <path d="M150 182 Q176 172 171 202 Q160 212 150 196 Z"/>
-    <ellipse cx="110" cy="164" rx="42" ry="48"/>
-    <circle cx="110" cy="111" r="30"/>
-    <path d="M90 94 L79 68 L100 89 Z"/>
-    <path d="M130 94 L141 68 L120 89 Z"/>
-  </g>
-  <g fill="var(--accent)">
-    <ellipse cx="195" cy="150" rx="55" ry="60"/>
-    <circle cx="195" cy="90" r="38"/>
-    <path d="M165 69 Q155 39 175 54 Z"/>
-    <path d="M225 69 Q235 39 215 54 Z"/>
-  </g>
-</svg>
-</div>
-"""
+HERO_IMAGE_PATH = "assets/hero-pets.png"
 
 
 def halaman_awal():
@@ -388,7 +370,12 @@ def halaman_awal():
         if st.button("Isi data diri", type="primary"):
             st.session_state["page"] = "register"
     with col_art:
-        st.markdown(HERO_SVG, unsafe_allow_html=True)
+        if os.path.exists(HERO_IMAGE_PATH):
+            b64 = base64.b64encode(open(HERO_IMAGE_PATH, "rb").read()).decode()
+            st.markdown(
+                f'<div class="hero-art fade-in"><img src="data:image/png;base64,{b64}" /></div>',
+                unsafe_allow_html=True,
+            )
 
 
 # ==========================================================
