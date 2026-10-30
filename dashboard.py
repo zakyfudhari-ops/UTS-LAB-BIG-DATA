@@ -517,6 +517,6 @@ pages = {
 pages.get(st.session_state["page"], halaman_awal)()
 
 st.markdown(
-    f'<div class="footer">{NAMA_PEMBUAT}<br>{NIM_PEMBUAT}<br>Proyek UTS Big Data, pemindai kucing dan anjing.</div>',
+    f'<div class="footer">{NAMA_PEMBUAT}<br>{NIM_PEMBUAT}<br>Proyek UTS Big Data.</div>',
     unsafe_allow_html=True,
 )
