@@ -197,6 +197,7 @@ defaults = {
     "user_name": "",
     "user_campus": "",
     "history": [],
+    "play_login_sound": False,
 }
 for key, val in defaults.items():
     if key not in st.session_state:
@@ -290,6 +291,17 @@ def pil_to_base64(img: Image.Image) -> str:
     buf = io.BytesIO()
     img.convert("RGB").save(buf, format="PNG")
     return base64.b64encode(buf.getvalue()).decode()
+
+
+MEOW_SOUND_URL = "https://www.myinstants.com/media/sounds/m-e-o-w.mp3"
+
+
+def play_meow_sound():
+    st.markdown(
+        f'<audio autoplay style="display:none">'
+        f'<source src="{MEOW_SOUND_URL}" type="audio/mpeg"></audio>',
+        unsafe_allow_html=True,
+    )
 
 
 def render_header():
@@ -404,6 +416,7 @@ def halaman_registrasi():
                 st.session_state["user_name"] = name.strip()
                 st.session_state["user_campus"] = campus.strip()
                 st.session_state["page"] = "main"
+                st.session_state["play_login_sound"] = True
 
     if st.button("Kembali", type="secondary"):
         st.session_state["page"] = "home"
@@ -414,6 +427,10 @@ def halaman_registrasi():
 # ==========================================================
 def halaman_main():
     render_header()
+
+    if st.session_state.get("play_login_sound"):
+        play_meow_sound()
+        st.session_state["play_login_sound"] = False
 
     st.sidebar.markdown("**Model**")
     st.sidebar.caption(
