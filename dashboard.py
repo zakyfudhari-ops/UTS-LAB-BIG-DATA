@@ -1,17 +1,16 @@
 """
 Pemindai Spesies — Klasifikasi Gambar Kucing vs Anjing
 Dikembangkan dari struktur referensi (Mussliadii/GambarMus): alur halaman
-serupa (mulai -> daftar -> pindai -> umpan balik), tapi desain, komponen,
-dan kode ditulis ulang total. Konsep visual: "field scanner" — foto yang
-diunggah ditampilkan seperti slide foto di meja lab lengkap dengan bracket
-fokus ala viewfinder kamera, dan hasil tiap model ditampilkan sebagai
-catatan pindaian dengan dial lingkaran, bukan kartu seragam bergaya SaaS.
+serupa (mulai -> daftar -> pindai), tapi desain, komponen, dan kode ditulis
+ulang total. Konsep visual: "field scanner" — foto yang diunggah
+ditampilkan seperti slide foto di meja lab lengkap dengan bracket fokus
+ala viewfinder kamera, dan hasil tiap model ditampilkan sebagai catatan
+pindaian dengan dial lingkaran, bukan kartu seragam bergaya SaaS.
 
 Fitur:
 - Dua model (.pt YOLO & .h5 CNN) yang bisa dijalankan sendiri atau dibandingkan
 - Anotasi label + confidence langsung di atas foto
 - Riwayat pindaian per sesi
-- Form umpan balik tersimpan ke CSV
 
 Struktur folder:
 ├── dashboard.py
@@ -25,7 +24,6 @@ Struktur folder:
 import io
 import base64
 import datetime
-import os
 
 import numpy as np
 import pandas as pd
@@ -39,14 +37,13 @@ CLASS_NAMES = ["Anjing", "Kucing"]      # urutan alfabetis (default Keras flow_f
 IMG_SIZE = (224, 224)
 PYTORCH_MODEL_PATH = "model/KucingAnjing.pt"
 KERAS_MODEL_PATH = "model/AnjingKucing.h5"
-FEEDBACK_CSV = "feedbacks.csv"
 
 NAMA_PEMBUAT = "M. Zaky Al Fudhari"      # ganti sesuai nama kamu
 NIM_PEMBUAT = "NIM kamu di sini"         # ganti sesuai NIM kamu
 KAMPUS_DEFAULT = "Universitas kamu"
 
-STEP_KEYS = ["home", "register", "main", "feedback"]
-STEP_LABELS = ["Mulai", "Daftar", "Pindai", "Umpan balik"]
+STEP_KEYS = ["home", "register", "main"]
+STEP_LABELS = ["Mulai", "Daftar", "Pindai"]
 
 st.set_page_config(
     page_title="Pemindai Spesies",
@@ -177,9 +174,6 @@ defaults = {
     "user_name": "",
     "user_campus": "",
     "history": [],
-    "last_label": None,
-    "last_conf": None,
-    "last_model": None,
 }
 for key, val in defaults.items():
     if key not in st.session_state:
@@ -457,12 +451,6 @@ def halaman_main():
                 "prediksi": top_label,
                 "confidence_%": round(top_conf * 100, 2),
             })
-            st.session_state["last_label"] = top_label
-            st.session_state["last_conf"] = top_conf * 100
-            st.session_state["last_model"] = mode
-
-            if st.button("Beri umpan balik"):
-                st.session_state["page"] = "feedback"
     else:
         st.info("Belum ada foto. Unggah satu untuk memulai pindaian.")
 
@@ -476,53 +464,12 @@ def halaman_main():
 
 
 # ==========================================================
-# HALAMAN: UMPAN BALIK
-# ==========================================================
-def halaman_feedback():
-    render_header()
-    st.markdown(
-        '<div class="intro">Bagaimana hasil pindaian terakhir? Penilaianmu membantu evaluasi kedua model.</div>',
-        unsafe_allow_html=True,
-    )
-
-    with st.form("form_feedback"):
-        rating = st.slider("Tingkat kepuasan (1–5)", 1, 5, 5)
-        comment = st.text_area("Catatan tambahan", height=120)
-        submitted = st.form_submit_button("Simpan masukan", type="primary")
-
-        if submitted:
-            row = {
-                "timestamp": datetime.datetime.now().isoformat(),
-                "nama": st.session_state["user_name"],
-                "kampus": st.session_state["user_campus"],
-                "model": st.session_state["last_model"],
-                "prediksi": st.session_state["last_label"],
-                "confidence": st.session_state["last_conf"],
-                "rating": rating,
-                "komentar": comment,
-            }
-            df_row = pd.DataFrame([row])
-            try:
-                if not os.path.exists(FEEDBACK_CSV):
-                    df_row.to_csv(FEEDBACK_CSV, index=False, mode="w", encoding="utf-8")
-                else:
-                    df_row.to_csv(FEEDBACK_CSV, index=False, mode="a", header=False, encoding="utf-8")
-                st.success("Masukan tersimpan. Terima kasih.")
-            except Exception as e:
-                st.error(f"Gagal menyimpan masukan: {e}")
-
-    if st.button("Kembali ke pemindai", type="secondary"):
-        st.session_state["page"] = "main"
-
-
-# ==========================================================
 # ROUTING
 # ==========================================================
 pages = {
     "home": halaman_awal,
     "register": halaman_registrasi,
     "main": halaman_main,
-    "feedback": halaman_feedback,
 }
 pages.get(st.session_state["page"], halaman_awal)()
 
