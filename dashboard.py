@@ -25,6 +25,9 @@ import io
 import os
 import base64
 import datetime
+from zoneinfo import ZoneInfo
+
+WIB = ZoneInfo("Asia/Jakarta")
 
 import numpy as np
 import pandas as pd
@@ -469,7 +472,7 @@ def halaman_main():
                 specimen_frame(annotated, f"Ditandai berdasarkan {top_model}")
 
             st.session_state["history"].append({
-                "waktu": datetime.datetime.now().strftime("%H:%M:%S"),
+                "waktu": datetime.datetime.now(WIB).strftime("%H:%M:%S"),
                 "file": uploaded_file.name,
                 "prediksi": top_label,
                 "confidence_%": round(top_conf * 100, 2),
