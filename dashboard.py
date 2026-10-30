@@ -413,14 +413,9 @@ def halaman_main():
     render_header()
 
     st.sidebar.markdown("**Model**")
-    mode = st.sidebar.radio(
-        "Model",
-        ["YOLO (deteksi)", "CNN (klasifikasi)", "Bandingkan keduanya"],
-        label_visibility="collapsed",
-    )
     st.sidebar.caption(
-        "YOLO menandai posisi objek sebelum memberi label. "
-        "CNN langsung mengklasifikasikan seluruh gambar."
+        "Setiap foto dipindai oleh dua model sekaligus: YOLO menandai posisi objek sebelum "
+        "memberi label, CNN langsung mengklasifikasikan seluruh gambar."
     )
 
     swap_labels = st.sidebar.checkbox("Balik urutan label (Anjing ⇄ Kucing)", value=False)
@@ -444,21 +439,19 @@ def halaman_main():
 
         results = []
         with st.spinner("Memindai gambar..."):
-            if mode in ("YOLO (deteksi)", "Bandingkan keduanya"):
-                try:
-                    model = load_pytorch_model(PYTORCH_MODEL_PATH)
-                    label, conf, probs, names = predict_pytorch(model, pil_image, class_names)
-                    results.append(("📷", "YOLO (deteksi)", label, conf, probs, names))
-                except Exception as e:
-                    st.error(f"YOLO gagal memindai: {e}")
+            try:
+                model = load_pytorch_model(PYTORCH_MODEL_PATH)
+                label, conf, probs, names = predict_pytorch(model, pil_image, class_names)
+                results.append(("📷", "YOLO (deteksi)", label, conf, probs, names))
+            except Exception as e:
+                st.error(f"YOLO gagal memindai: {e}")
 
-            if mode in ("CNN (klasifikasi)", "Bandingkan keduanya"):
-                try:
-                    model = load_keras_model(KERAS_MODEL_PATH)
-                    label, conf, probs, names = predict_keras(model, pil_image, class_names)
-                    results.append(("🧪", "CNN (klasifikasi)", label, conf, probs, names))
-                except Exception as e:
-                    st.error(f"CNN gagal memindai: {e}")
+            try:
+                model = load_keras_model(KERAS_MODEL_PATH)
+                label, conf, probs, names = predict_keras(model, pil_image, class_names)
+                results.append(("🧪", "CNN (klasifikasi)", label, conf, probs, names))
+            except Exception as e:
+                st.error(f"CNN gagal memindai: {e}")
 
         if results:
             with col2:
@@ -478,7 +471,6 @@ def halaman_main():
             st.session_state["history"].append({
                 "waktu": datetime.datetime.now().strftime("%H:%M:%S"),
                 "file": uploaded_file.name,
-                "mode": mode,
                 "prediksi": top_label,
                 "confidence_%": round(top_conf * 100, 2),
             })
