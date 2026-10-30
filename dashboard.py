@@ -1,6 +1,6 @@
 """
 Pemindai Spesies — Klasifikasi Gambar Kucing vs Anjing
-Dikembangkan dari struktur referensi (Mussliadii/GambarMus): alur halaman
+Dikembangkan dari struktur referensi: alur halaman
 serupa (mulai -> daftar -> pindai), tapi desain, komponen, dan kode ditulis
 ulang total. Konsep visual: "field scanner" — foto yang diunggah
 ditampilkan seperti slide foto di meja lab lengkap dengan bracket fokus
