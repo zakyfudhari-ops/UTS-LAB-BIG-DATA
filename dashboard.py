@@ -151,7 +151,9 @@ def load_keras_model(path: str):
 def predict_pytorch(model, pil_image: Image.Image, class_names):
     # Model YOLO ini bisa berupa model klasifikasi (punya r.probs) ATAU
     # model deteksi objek (punya r.boxes, tidak punya r.probs). Tangani keduanya.
-    results = model.predict(np.array(pil_image.convert("RGB")), verbose=False)
+    # confidence threshold diturunkan (default YOLO 0.25) karena model ini
+    # dilatih dari nol dengan data terbatas, jadi confidence-nya cenderung rendah.
+    results = model.predict(np.array(pil_image.convert("RGB")), conf=0.10, verbose=False)
     r = results[0]
     names = [model.names[i] for i in range(len(model.names))]
 
@@ -167,7 +169,10 @@ def predict_pytorch(model, pil_image: Image.Image, class_names):
     # --- mode deteksi objek ---
     boxes = r.boxes
     if boxes is None or len(boxes) == 0:
-        raise ValueError("Model tidak mendeteksi objek kucing/anjing pada gambar ini.")
+        raise ValueError(
+            "Model tidak mendeteksi objek apa pun walau threshold sudah diturunkan ke 10%. "
+            "Kemungkinan model ini butuh dilatih ulang dengan data/epoch lebih banyak."
+        )
 
     confs = boxes.conf.cpu().numpy()
     clss = boxes.cls.cpu().numpy().astype(int)
