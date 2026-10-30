@@ -60,34 +60,50 @@ st.markdown("""
 @import url('https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap');
 
 :root{
-    --bg:#12201B;
-    --surface:#1B2B23;
-    --surface-2:#24362C;
-    --line: rgba(237,232,221,0.14);
-    --accent:#E3A23B;
-    --accent-soft: rgba(227,162,59,0.18);
+    --bg:#0D1711;
+    --surface:#1E2F25;
+    --surface-2:#28402F;
+    --line: rgba(237,232,221,0.12);
+    --accent:#F2994A;
+    --accent-soft: rgba(242,153,74,0.20);
     --sage:#8FB996;
-    --coral:#D97A6C;
-    --text:#EDE8DD;
-    --text-dim:#9DAFA3;
+    --coral:#E08A72;
+    --text:#F3EFE4;
+    --text-dim:#A9BBAD;
 }
 
 html, body, [class*="css"] { font-family:'IBM Plex Sans', sans-serif; }
 
 [data-testid="stAppViewContainer"] {
-    background: radial-gradient(1100px 560px at 8% -12%, rgba(227,162,59,0.07), transparent 60%), var(--bg);
+    background:
+        radial-gradient(900px 520px at 88% 8%, rgba(242,153,74,0.10), transparent 60%),
+        radial-gradient(760px 520px at 6% 96%, rgba(143,185,150,0.09), transparent 60%),
+        var(--bg);
     color: var(--text);
 }
 [data-testid="stHeader"], [data-testid="stToolbar"] { background: transparent; }
 .block-container {
-    padding-top: 2rem !important;
-    padding-left: 2.5rem !important;
-    padding-right: 2.5rem !important;
+    background: var(--surface);
+    border-radius: 26px;
+    margin: 28px auto !important;
+    padding: 36px 42px 30px 42px !important;
     max-width: 1180px !important;
+    box-shadow: 0 30px 70px rgba(0,0,0,0.38);
+    border: 1px solid rgba(255,255,255,0.05);
+    position: relative;
+    overflow: hidden;
+}
+.block-container::before{
+    content:""; position:absolute; top:-80px; right:-80px; width:260px; height:260px; border-radius:50%;
+    background: radial-gradient(circle, rgba(242,153,74,0.14), transparent 70%); pointer-events:none;
+}
+.block-container::after{
+    content:""; position:absolute; bottom:-100px; left:-60px; width:260px; height:260px; border-radius:50%;
+    background: radial-gradient(circle, rgba(143,185,150,0.10), transparent 70%); pointer-events:none;
 }
 
 /* ---------- header & step track ---------- */
-.header-bar{ display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:14px; border-bottom:1px solid var(--line); padding-bottom:18px; margin-bottom:8px; }
+.header-bar{ display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:14px; border-bottom:1px solid var(--line); padding-bottom:18px; margin-bottom:8px; position:relative; z-index:1; }
 .wordmark{ font-family:'Big Shoulders Display'; font-weight:800; font-size:21px; letter-spacing:.01em; color:var(--text); }
 .step-track{ display:flex; align-items:center; }
 .step{ display:flex; align-items:center; }
@@ -105,14 +121,16 @@ html, body, [class*="css"] { font-family:'IBM Plex Sans', sans-serif; }
 /* ---------- hero (home) ---------- */
 .hero-title{ font-family:'Big Shoulders Display'; font-weight:800; font-size:clamp(32px,4.4vw,50px); line-height:1.04; color:var(--text); margin:22px 0 10px 0; max-width:720px; }
 .hero-sub{ font-size:15px; color:var(--text-dim); max-width:560px; line-height:1.65; margin-bottom:6px; }
+.hero-art{ background:var(--surface-2); border-radius:20px; border:1px solid var(--line); padding:12px; margin-top:8px; }
+.hero-art svg{ width:100%; height:auto; display:block; }
 
 /* ---------- intro / section heading ---------- */
 .intro{ border-left:3px solid var(--accent); padding:2px 0 2px 16px; margin:8px 0 22px 0; color:var(--text-dim); font-size:14.5px; line-height:1.65; max-width:680px; }
 .section-heading{ font-family:'Big Shoulders Display'; font-weight:700; font-size:19px; color:var(--text); margin:26px 0 10px 0; }
 
 /* ---------- specimen frame (foto) ---------- */
-.specimen{ position:relative; background:var(--surface); border:1px solid var(--line); padding:14px; }
-.specimen img{ width:100%; display:block; }
+.specimen{ position:relative; background:var(--surface-2); border:1px solid var(--line); border-radius:16px; padding:14px; overflow:hidden; }
+.specimen img{ width:100%; display:block; border-radius:8px; }
 .specimen .corner{ position:absolute; width:16px; height:16px; border-color:var(--accent); }
 .specimen .corner.tl{ top:6px; left:6px; border-top:2px solid; border-left:2px solid; }
 .specimen .corner.tr{ top:6px; right:6px; border-top:2px solid; border-right:2px solid; }
@@ -141,26 +159,27 @@ html, body, [class*="css"] { font-family:'IBM Plex Sans', sans-serif; }
 .prob-pct{ font-family:'IBM Plex Mono'; font-size:11px; color:var(--text-dim); text-align:right; }
 
 /* ---------- sidebar ---------- */
-[data-testid="stSidebar"]{ background:var(--surface); border-right:1px solid var(--line); }
+[data-testid="stSidebar"]{ background:var(--bg); border-right:1px solid var(--line); }
+[data-testid="stSidebar"] > div:first-child{ padding-top:1.5rem; }
 [data-testid="stSidebar"] label, [data-testid="stSidebar"] p, [data-testid="stSidebar"] span { color:var(--text) !important; }
 [data-testid="stSidebar"] .stCaption, [data-testid="stSidebar"] small { color:var(--text-dim) !important; }
 
 /* ---------- widgets ---------- */
-[data-testid="stFileUploaderDropzone"]{ background:var(--surface-2); border:1px dashed var(--line); border-radius:8px; }
+[data-testid="stFileUploaderDropzone"]{ background:var(--surface-2); border:1px dashed var(--line); border-radius:14px; }
 [data-testid="stTextInput"] input, [data-testid="stTextArea"] textarea{
-    background:var(--surface-2) !important; color:var(--text) !important; border:1px solid var(--line) !important; border-radius:6px !important;
+    background:var(--surface-2) !important; color:var(--text) !important; border:1px solid var(--line) !important; border-radius:10px !important;
 }
-[data-testid="stAlert"]{ background:var(--surface-2); border:1px solid var(--line); border-radius:8px; color:var(--text); }
+[data-testid="stAlert"]{ background:var(--surface-2); border:1px solid var(--line); border-radius:12px; color:var(--text); }
 
 [data-testid="stButton"] button, [data-testid="stFormSubmitButton"] button{
-    font-weight:600; font-size:14px; border-radius:6px; padding:0.55rem 1.3rem; border:none;
-    background:var(--accent); color:#1B140A; transition:filter .15s ease, transform .15s ease;
+    font-weight:600; font-size:14px; border-radius:10px; padding:0.6rem 1.4rem; border:none;
+    background:var(--accent); color:#241607; transition:filter .15s ease, transform .15s ease;
 }
 [data-testid="stButton"] button:hover, [data-testid="stFormSubmitButton"] button:hover{ filter:brightness(1.08); transform:translateY(-1px); }
 [data-testid="stButton"] button[kind="secondary"]{ background:transparent; border:1px solid var(--line); color:var(--text-dim); }
 [data-testid="stButton"] button[kind="secondary"]:hover{ border-color:var(--accent); color:var(--text); filter:none; }
 
-[data-testid="stDataFrame"]{ border:1px solid var(--line); border-radius:8px; overflow:hidden; }
+[data-testid="stDataFrame"]{ border:1px solid var(--line); border-radius:12px; overflow:hidden; }
 
 .footer{ text-align:left; color:var(--text-dim); font-size:12.5px; line-height:1.7; border-top:1px solid var(--line); padding-top:16px; margin-top:34px; }
 </style>
@@ -331,19 +350,45 @@ def render_result_row(icon: str, model_name: str, label: str, conf: float, names
 # ==========================================================
 # HALAMAN: AWAL
 # ==========================================================
+HERO_SVG = """
+<div class="hero-art fade-in">
+<svg viewBox="0 0 320 260" xmlns="http://www.w3.org/2000/svg">
+  <ellipse cx="160" cy="214" rx="120" ry="18" fill="rgba(0,0,0,0.18)"/>
+  <g fill="var(--sage)">
+    <path d="M150 182 Q176 172 171 202 Q160 212 150 196 Z"/>
+    <ellipse cx="110" cy="164" rx="42" ry="48"/>
+    <circle cx="110" cy="111" r="30"/>
+    <path d="M90 94 L79 68 L100 89 Z"/>
+    <path d="M130 94 L141 68 L120 89 Z"/>
+  </g>
+  <g fill="var(--accent)">
+    <ellipse cx="195" cy="150" rx="55" ry="60"/>
+    <circle cx="195" cy="90" r="38"/>
+    <path d="M165 69 Q155 39 175 54 Z"/>
+    <path d="M225 69 Q235 39 215 54 Z"/>
+  </g>
+</svg>
+</div>
+"""
+
+
 def halaman_awal():
     render_header()
-    st.markdown(
-        '<div class="fade-in">'
-        '<div class="hero-title">Satu foto, dua model,<br>satu jawaban: kucing atau anjing.</div>'
-        '<div class="hero-sub">Unggah fotonya. Model YOLO dan model CNN sama-sama memeriksa gambar itu, '
-        'lalu masing-masing melaporkan hasilnya secara terpisah — lengkap dengan seberapa yakin mereka.</div>'
-        '</div>',
-        unsafe_allow_html=True,
-    )
-    st.write("")
-    if st.button("Isi data diri", type="primary"):
-        st.session_state["page"] = "register"
+    col_text, col_art = st.columns([0.56, 0.44])
+    with col_text:
+        st.markdown(
+            '<div class="fade-in">'
+            '<div class="hero-title">Satu foto, dua model,<br>satu jawaban: kucing atau anjing.</div>'
+            '<div class="hero-sub">Unggah fotonya. Model YOLO dan model CNN sama-sama memeriksa gambar itu, '
+            'lalu masing-masing melaporkan hasilnya secara terpisah — lengkap dengan seberapa yakin mereka.</div>'
+            '</div>',
+            unsafe_allow_html=True,
+        )
+        st.write("")
+        if st.button("Isi data diri", type="primary"):
+            st.session_state["page"] = "register"
+    with col_art:
+        st.markdown(HERO_SVG, unsafe_allow_html=True)
 
 
 # ==========================================================
