@@ -92,7 +92,7 @@ html, body, [class*="css"] { font-family:'IBM Plex Sans', sans-serif; }
     box-shadow: 0 30px 70px rgba(0,0,0,0.38);
     border: 1px solid rgba(255,255,255,0.05);
     position: relative;
-    overflow: hidden;
+    clip-path: inset(0 round 26px);
 }
 .block-container::before{
     content:""; position:absolute; top:-80px; right:-80px; width:260px; height:260px; border-radius:50%;
