@@ -27,7 +27,7 @@ from plotly import express as px
 # ==========================================================
 # KONFIGURASI — sesuaikan dengan model kamu
 # ==========================================================
-CLASS_NAMES = ["Kucing", "Anjing"]     # urutan harus sama dengan saat training
+CLASS_NAMES = ["Anjing", "Kucing"]     # urutan alfabetis (default Keras flow_from_directory)
 IMG_SIZE = (224, 224)                   # ukuran input model
 PYTORCH_MODEL_PATH = "model/KucingAnjing.pt"
 KERAS_MODEL_PATH = "model/AnjingKucing.h5"
@@ -149,15 +149,35 @@ def load_keras_model(path: str):
 
 
 def predict_pytorch(model, pil_image: Image.Image, class_names):
-    # Model YOLO klasifikasi: model.names berisi label asli sesuai urutan saat training.
+    # Model YOLO ini bisa berupa model klasifikasi (punya r.probs) ATAU
+    # model deteksi objek (punya r.boxes, tidak punya r.probs). Tangani keduanya.
     results = model.predict(np.array(pil_image.convert("RGB")), verbose=False)
     r = results[0]
-    probs_obj = r.probs
-    idx = int(probs_obj.top1)
-    conf = float(probs_obj.top1conf)
     names = [model.names[i] for i in range(len(model.names))]
-    probs = probs_obj.data.cpu().numpy()
-    label = names[idx]
+
+    if r.probs is not None:
+        # --- mode klasifikasi ---
+        probs_obj = r.probs
+        idx = int(probs_obj.top1)
+        conf = float(probs_obj.top1conf)
+        probs = probs_obj.data.cpu().numpy()
+        label = names[idx]
+        return label, conf, probs, names
+
+    # --- mode deteksi objek ---
+    boxes = r.boxes
+    if boxes is None or len(boxes) == 0:
+        raise ValueError("Model tidak mendeteksi objek kucing/anjing pada gambar ini.")
+
+    confs = boxes.conf.cpu().numpy()
+    clss = boxes.cls.cpu().numpy().astype(int)
+    best_idx = int(np.argmax(confs))
+    best_cls = int(clss[best_idx])
+    conf = float(confs[best_idx])
+    label = names[best_cls]
+
+    probs = np.zeros(len(names))
+    probs[best_cls] = conf
     return label, conf, probs, names
 
 
