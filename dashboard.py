@@ -337,15 +337,25 @@ def prob_breakdown_html(names, probs) -> str:
     return f'<div class="prob-breakdown">{rows}</div>'
 
 
+UNCERTAIN_THRESHOLD = 50.0  # di bawah ini, model dianggap tidak yakin ini kucing/anjing
+
+
 def render_result_row(icon: str, model_name: str, label: str, conf: float, names, probs):
     pct = conf * 100
-    color = "var(--accent)" if pct >= 50 else "var(--coral)"
+    uncertain = pct < UNCERTAIN_THRESHOLD
+
+    color = "var(--coral)" if uncertain else "var(--accent)"
     ring = confidence_ring_html(pct, color)
-    note = '<div class="row-note">Keyakinan rendah — hasil ini kurang bisa diandalkan.</div>' if pct < 50 else ""
+    display_label = "Bukan kucing/anjing?" if uncertain else label
+    note = (
+        '<div class="row-note">Confidence di bawah 50% — kemungkinan objek pada foto ini '
+        'bukan kucing atau anjing, atau model tidak mengenalinya.</div>'
+        if uncertain else ""
+    )
     st.markdown(
         f'<div class="log-row"><div class="row-main"><div class="row-icon">{icon}</div>'
         f'<div class="row-text"><div class="row-model">{model_name}</div>'
-        f'<div class="row-label">{label}</div>{note}</div></div>{ring}</div>',
+        f'<div class="row-label">{display_label}</div>{note}</div></div>{ring}</div>',
         unsafe_allow_html=True,
     )
     st.markdown(prob_breakdown_html(names, probs), unsafe_allow_html=True)
@@ -465,7 +475,8 @@ def halaman_main():
                 st.markdown('</div>', unsafe_allow_html=True)
 
             top_icon, top_model, top_label, top_conf = results[0][0], results[0][1], results[0][2], results[0][3]
-            annotated = annotate_image(pil_image, top_label, top_conf)
+            top_display_label = "Bukan kucing/anjing?" if top_conf * 100 < UNCERTAIN_THRESHOLD else top_label
+            annotated = annotate_image(pil_image, top_display_label, top_conf)
             st.markdown('<div class="section-heading">Foto dengan anotasi</div>', unsafe_allow_html=True)
             acol, _ = st.columns([0.46, 0.54])
             with acol:
@@ -474,7 +485,7 @@ def halaman_main():
             st.session_state["history"].append({
                 "waktu": datetime.datetime.now(WIB).strftime("%H:%M:%S"),
                 "file": uploaded_file.name,
-                "prediksi": top_label,
+                "prediksi": top_display_label,
                 "confidence_%": round(top_conf * 100, 2),
             })
     else:
