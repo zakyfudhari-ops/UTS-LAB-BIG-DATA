@@ -1,3 +1,20 @@
+"""
+Dashboard Klasifikasi Gambar: Kucing vs Anjing
+Dikembangkan dari struktur referensi (Mussliadii/GambarMus) dengan desain,
+alur halaman, dan fitur yang dibangun ulang: tema warna berbeda, dua model
+(.pt & .h5) yang bisa dibandingkan langsung, anotasi hasil pada gambar,
+riwayat prediksi per sesi, dan form feedback yang tersimpan ke CSV.
+
+Struktur folder:
+├── dashboard.py
+├── requirements.txt
+├── packages.txt
+├── model/
+│   ├── KucingAnjing.pt
+│   └── MZakyAlFudhari_Laporan2.h5
+└── sample_images/        (opsional)
+"""
+
 import io
 import datetime
 
@@ -13,7 +30,7 @@ from plotly import express as px
 CLASS_NAMES = ["Kucing", "Anjing"]     # urutan harus sama dengan saat training
 IMG_SIZE = (224, 224)                   # ukuran input model
 PYTORCH_MODEL_PATH = "model/KucingAnjing.pt"
-KERAS_MODEL_PATH = "model/MZakyAlFudhari_Laporan2.h5"
+KERAS_MODEL_PATH = "model/AnjingKucing.h5"
 FEEDBACK_CSV = "feedbacks.csv"
 
 NAMA_PEMBUAT = "M. Zaky Al Fudhari"     # ganti sesuai nama kamu
