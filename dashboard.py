@@ -418,9 +418,9 @@ def halaman_main():
         "memberi label, CNN langsung mengklasifikasikan seluruh gambar."
     )
 
-    swap_labels = st.sidebar.checkbox("Balik urutan label (Anjing ⇄ Kucing)", value=False)
-    st.sidebar.caption("Aktifkan kalau hasil CNN sering tertukar antara kucing dan anjing.")
-    class_names = list(reversed(CLASS_NAMES)) if swap_labels else CLASS_NAMES
+    # Urutan label dibalik otomatis dari default alfabetis — hasil pengujian manual
+    # menunjukkan urutan terbalik ini yang cocok dengan output model CNN saat ini.
+    class_names = list(reversed(CLASS_NAMES))
 
     st.markdown(
         f'<div class="intro">Halo {st.session_state["user_name"]} dari {st.session_state["user_campus"]}. '
