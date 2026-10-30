@@ -1,20 +1,3 @@
-"""
-Dashboard Klasifikasi Gambar: Kucing vs Anjing
-Dikembangkan dari struktur referensi (Mussliadii/GambarMus) dengan desain,
-alur halaman, dan fitur yang dibangun ulang: tema warna berbeda, dua model
-(.pt & .h5) yang bisa dibandingkan langsung, anotasi hasil pada gambar,
-riwayat prediksi per sesi, dan form feedback yang tersimpan ke CSV.
-
-Struktur folder:
-├── dashboard.py
-├── requirements.txt
-├── packages.txt
-├── model/
-│   ├── KucingAnjing.pt
-│   └── MZakyAlFudhari_Laporan2.h5
-└── sample_images/        (opsional)
-"""
-
 import io
 import datetime
 
