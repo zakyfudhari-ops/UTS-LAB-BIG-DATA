@@ -32,6 +32,7 @@ WIB = ZoneInfo("Asia/Jakarta")
 import numpy as np
 import pandas as pd
 import streamlit as st
+import streamlit.components.v1 as components
 from PIL import Image, ImageDraw, ImageFont
 
 # ==========================================================
@@ -319,14 +320,58 @@ def pil_to_base64(img: Image.Image) -> str:
 
 
 MEOW_SOUND_URL = "https://www.myinstants.com/media/sounds/m-e-o-w.mp3"
+MEOW_STICKER_PATH = "assets/meow-sticker.jpg"
 
 
 def play_meow_sound():
-    st.markdown(
-        f'<audio autoplay style="display:none">'
-        f'<source src="{MEOW_SOUND_URL}" type="audio/mpeg"></audio>',
-        unsafe_allow_html=True,
-    )
+    # Stiker kucing muncul (pop-in) bareng suara "meow" diputar, lalu memudar
+    # (fade-out) persis saat suaranya selesai — disinkronkan lewat event
+    # 'ended' milik elemen <audio>, bukan sekadar delay tebakan.
+    if not os.path.exists(MEOW_STICKER_PATH):
+        st.markdown(
+            f'<audio autoplay style="display:none">'
+            f'<source src="{MEOW_SOUND_URL}" type="audio/mpeg"></audio>',
+            unsafe_allow_html=True,
+        )
+        return
+
+    b64 = base64.b64encode(open(MEOW_STICKER_PATH, "rb").read()).decode()
+    html = f"""
+    <div style="display:flex; justify-content:center; align-items:center; height:210px;">
+      <img id="meow-sticker" src="data:image/jpeg;base64,{b64}"
+           style="width:170px; height:170px; object-fit:cover; border-radius:22px;
+                  border:4px solid #F2994A; box-shadow:0 12px 32px rgba(0,0,0,0.45);
+                  opacity:0; transform:scale(0.4) rotate(-8deg);
+                  animation: meowPop 0.35s cubic-bezier(.34,1.56,.64,1) forwards;" />
+      <audio id="meow-audio" autoplay>
+        <source src="{MEOW_SOUND_URL}" type="audio/mpeg">
+      </audio>
+    </div>
+    <style>
+      @keyframes meowPop {{
+        0% {{ opacity:0; transform:scale(0.4) rotate(-8deg); }}
+        60% {{ opacity:1; transform:scale(1.08) rotate(3deg); }}
+        100% {{ opacity:1; transform:scale(1) rotate(0deg); }}
+      }}
+      @keyframes meowFade {{
+        0% {{ opacity:1; transform:scale(1) rotate(0deg); }}
+        100% {{ opacity:0; transform:scale(0.6) rotate(6deg); }}
+      }}
+    </style>
+    <script>
+      var audio = document.getElementById('meow-audio');
+      var sticker = document.getElementById('meow-sticker');
+      function fadeOut() {{
+        if (sticker) {{ sticker.style.animation = 'meowFade 0.4s ease forwards'; }}
+      }}
+      if (audio) {{
+        audio.addEventListener('ended', fadeOut);
+      }}
+      // Jaga-jaga kalau event 'ended' tidak terpicu (mis. autoplay diblokir browser).
+      setTimeout(fadeOut, 4000);
+    </script>
+    """
+    components.html(html, height=210)
 
 
 def render_header():
