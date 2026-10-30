@@ -149,7 +149,10 @@ html, body, [class*="css"] { font-family:'IBM Plex Sans', sans-serif; }
 .row-icon{ font-size:21px; width:30px; text-align:center; flex:none; }
 .row-model{ font-size:12px; color:var(--text-dim); margin-bottom:2px; }
 .row-label{ font-family:'Big Shoulders Display'; font-weight:700; font-size:25px; color:var(--text); line-height:1; }
-.row-note{ font-size:12px; color:var(--coral); margin-top:5px; }
+.row-note{ font-size:12px; font-weight:600; color:var(--coral); margin-top:6px; display:flex; align-items:center; gap:4px; }
+
+/* ---------- catatan pindaian card ---------- */
+.note-card{ background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:18px 20px 10px; box-shadow:0 10px 26px rgba(0,0,0,0.28); }
 
 .ring{ width:60px; height:60px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex:none; }
 .ring-inner{ width:46px; height:46px; border-radius:50%; background:var(--surface); display:flex; align-items:center; justify-content:center; }
@@ -183,7 +186,7 @@ html, body, [class*="css"] { font-family:'IBM Plex Sans', sans-serif; }
 [data-testid="stButton"] button[kind="secondary"]{ background:transparent; border:1px solid var(--line); color:var(--text-dim); }
 [data-testid="stButton"] button[kind="secondary"]:hover{ border-color:var(--accent); color:var(--text); filter:none; }
 
-[data-testid="stDataFrame"]{ border:1px solid var(--line); border-radius:12px; overflow:hidden; }
+[data-testid="stDataFrame"]{ border:1px solid var(--line); border-radius:12px; overflow:auto; max-width:100%; }
 
 .footer{ text-align:left; color:var(--text-dim); font-size:12.5px; line-height:1.7; border-top:1px solid var(--line); padding-top:16px; margin-top:34px; }
 </style>
@@ -236,7 +239,7 @@ def predict_pytorch(model, pil_image: Image.Image, class_names):
         conf = float(probs_obj.top1conf)
         probs = probs_obj.data.cpu().numpy()
         label = names[idx]
-        return label, conf, probs, names
+        return label, conf, probs, names, None
 
     boxes = r.boxes
     if boxes is None or len(boxes) == 0:
@@ -254,7 +257,9 @@ def predict_pytorch(model, pil_image: Image.Image, class_names):
 
     probs = np.zeros(len(names))
     probs[best_cls] = conf
-    return label, conf, probs, names
+
+    bbox = boxes.xyxy[best_idx].cpu().numpy().tolist()
+    return label, conf, probs, names, bbox
 
 
 def predict_keras(model, pil_image: Image.Image, class_names):
@@ -262,26 +267,46 @@ def predict_keras(model, pil_image: Image.Image, class_names):
     arr = np.expand_dims(np.array(img) / 255.0, axis=0)
     probs = model.predict(arr, verbose=0)[0]
     idx = int(np.argmax(probs))
-    return class_names[idx], float(probs[idx]), probs, class_names
+    return class_names[idx], float(probs[idx]), probs, class_names, None
 
 
-def annotate_image(pil_image: Image.Image, label: str, confidence: float) -> Image.Image:
-    annotated = pil_image.convert("RGB").copy()
-    draw = ImageDraw.Draw(annotated)
+def annotate_image(pil_image: Image.Image, label: str, confidence: float, bbox=None) -> Image.Image:
+    # Kotak & label digambar di layer terpisah (RGBA) lalu di-composite, supaya
+    # latar belakang teks benar-benar semi-transparan dan tetap terbaca di foto apa pun.
+    base = pil_image.convert("RGBA")
+    overlay = Image.new("RGBA", base.size, (0, 0, 0, 0))
+    draw = ImageDraw.Draw(overlay)
+
+    box_color = (57, 255, 20, 255)     # hijau neon, kontras tinggi
+    text_color = (255, 235, 59, 255)   # kuning neon
+    bg_color = (8, 8, 8, 200)          # hampir hitam, semi-transparan
+
     text = f"{label}  {confidence * 100:.1f}%"
-
     try:
-        font = ImageFont.truetype("arial.ttf", size=max(18, annotated.width // 18))
+        font = ImageFont.truetype("arial.ttf", size=max(20, base.width // 16))
     except Exception:
         font = ImageFont.load_default()
 
-    bbox = draw.textbbox((0, 0), text, font=font)
-    tw, th = bbox[2] - bbox[0], bbox[3] - bbox[1]
+    tbbox = draw.textbbox((0, 0), text, font=font)
+    tw, th = tbbox[2] - tbbox[0], tbbox[3] - tbbox[1]
     pad = 10
 
-    draw.rectangle([(10, 10), (10 + tw + pad * 2, 10 + th + pad * 2)], fill=(27, 43, 35))
-    draw.text((10 + pad, 10 + pad), text, fill=(227, 162, 59), font=font)
-    return annotated
+    if bbox is not None:
+        x1, y1, x2, y2 = bbox
+        draw.rectangle([x1, y1, x2, y2], outline=box_color, width=5)
+        label_x = max(0, x1)
+        label_y = max(0, y1 - th - pad * 2 - 6)
+    else:
+        label_x, label_y = 10, 10
+
+    draw.rectangle(
+        [label_x, label_y, label_x + tw + pad * 2, label_y + th + pad * 2],
+        fill=bg_color,
+    )
+    draw.text((label_x + pad, label_y + pad), text, fill=text_color, font=font)
+
+    annotated = Image.alpha_composite(base, overlay)
+    return annotated.convert("RGB")
 
 
 # ==========================================================
@@ -353,7 +378,10 @@ def render_result_row(icon: str, model_name: str, label: str, conf: float, names
     pct = conf * 100
     color = "var(--accent)" if pct >= 50 else "var(--coral)"
     ring = confidence_ring_html(pct, color)
-    note = '<div class="row-note">Keyakinan rendah — hasil ini kurang bisa diandalkan.</div>' if pct < 50 else ""
+    note = (
+        '<div class="row-note">⚠️ Keyakinan rendah — hasil ini kurang bisa diandalkan.</div>'
+        if pct < 50 else ""
+    )
     st.markdown(
         f'<div class="log-row"><div class="row-main"><div class="row-icon">{icon}</div>'
         f'<div class="row-text"><div class="row-model">{model_name}</div>'
@@ -407,7 +435,15 @@ def halaman_registrasi():
     with st.form("form_reg"):
         name = st.text_input("Nama lengkap", value=st.session_state["user_name"])
         campus = st.text_input("Asal kampus", value=st.session_state["user_campus"] or KAMPUS_DEFAULT)
-        submitted = st.form_submit_button("Masuk ke pemindai", type="primary")
+
+        col_back, col_submit = st.columns([0.3, 0.7])
+        with col_back:
+            back_clicked = st.form_submit_button("Kembali", type="secondary")
+        with col_submit:
+            submitted = st.form_submit_button("Masuk ke pemindai", type="primary")
+
+        if back_clicked:
+            st.session_state["page"] = "home"
 
         if submitted:
             if not name.strip() or not campus.strip():
@@ -417,9 +453,6 @@ def halaman_registrasi():
                 st.session_state["user_campus"] = campus.strip()
                 st.session_state["page"] = "main"
                 st.session_state["play_login_sound"] = True
-
-    if st.button("Kembali", type="secondary"):
-        st.session_state["page"] = "home"
 
 
 # ==========================================================
@@ -461,28 +494,31 @@ def halaman_main():
         with st.spinner("Memindai gambar..."):
             try:
                 model = load_pytorch_model(PYTORCH_MODEL_PATH)
-                label, conf, probs, names = predict_pytorch(model, pil_image, class_names)
-                results.append(("📷", "YOLO (deteksi)", label, conf, probs, names))
+                label, conf, probs, names, bbox = predict_pytorch(model, pil_image, class_names)
+                results.append(("📷", "YOLO (deteksi)", label, conf, probs, names, bbox))
             except Exception as e:
                 st.error(f"YOLO gagal memindai: {e}")
 
             try:
                 model = load_keras_model(KERAS_MODEL_PATH)
-                label, conf, probs, names = predict_keras(model, pil_image, class_names)
-                results.append(("🧪", "CNN (klasifikasi)", label, conf, probs, names))
+                label, conf, probs, names, bbox = predict_keras(model, pil_image, class_names)
+                results.append(("🧪", "CNN (klasifikasi)", label, conf, probs, names, bbox))
             except Exception as e:
                 st.error(f"CNN gagal memindai: {e}")
 
         if results:
             with col2:
-                st.markdown('<div class="section-heading">Catatan pindaian</div>', unsafe_allow_html=True)
+                st.markdown('<div class="note-card">', unsafe_allow_html=True)
+                st.markdown('<div class="section-heading" style="margin-top:0">Catatan pindaian</div>', unsafe_allow_html=True)
                 st.markdown('<div class="log">', unsafe_allow_html=True)
-                for icon, model_name, label, conf, probs, names in results:
+                for icon, model_name, label, conf, probs, names, _bbox in results:
                     render_result_row(icon, model_name, label, conf, names, probs)
-                st.markdown('</div>', unsafe_allow_html=True)
+                st.markdown('</div></div>', unsafe_allow_html=True)
 
-            top_icon, top_model, top_label, top_conf = results[0][0], results[0][1], results[0][2], results[0][3]
-            annotated = annotate_image(pil_image, top_label, top_conf)
+            top_icon, top_model, top_label, top_conf, top_bbox = (
+                results[0][0], results[0][1], results[0][2], results[0][3], results[0][6]
+            )
+            annotated = annotate_image(pil_image, top_label, top_conf, bbox=top_bbox)
             st.markdown('<div class="section-heading">Foto dengan anotasi</div>', unsafe_allow_html=True)
             acol, _ = st.columns([0.46, 0.54])
             with acol:
